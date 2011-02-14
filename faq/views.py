@@ -40,7 +40,6 @@ def question_list( request, template_name='faq/question_list.html',
     if slug:
         topic = Topic.objects.get(slug=slug)
         kwargs.update({'topic': topic})
-    print kwargs
     query_set = Question.objects.active(**kwargs)
     
     if len(query_set) == 0:

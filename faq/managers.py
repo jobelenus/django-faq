@@ -29,7 +29,7 @@ class QuestionQuerySet(QuerySet):
         if group:
             qs = self.exclude(status__exact=enums.STATUS_INACTIVE,)
         if topic:
-            qs = qs.filter(status__exact=enums.STATUS_ACTIVE, topic=topic)
+            qs = qs.filter(topic=topic)
         return qs
 
 

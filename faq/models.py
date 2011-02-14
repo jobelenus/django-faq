@@ -26,7 +26,6 @@ class Topic(models.Model):
         try:
             return self.get_translation(None).name
         except TranslationDoesNotExist as e:
-            print e.__class__
             return self._translation_cache.values()[0].name # just show the first one
 
 
@@ -66,7 +65,10 @@ class Question(FaqBase):
         ordering = ['sort_order', 'created_on', ]
 
     def __unicode__(self):
-        return self.text
+        try:
+            return self.get_translation(None).text
+        except TranslationDoesNotExist as e:
+            return self._translation_cache.values()[0].text # just show the first one
 
     def save(self, *args, **kwargs):
         self.updated_on = datetime.now()
