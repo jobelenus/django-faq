@@ -4,8 +4,9 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect
 from django.template import RequestContext
 from django.http import Http404
-from models import Question
+from models import Question, Topic
 from forms import SubmitFAQForm
+
 
 def question_detail(request, slug, template_name='faq/question_detail.html', extra_context={}):
     """
@@ -21,9 +22,10 @@ def question_detail(request, slug, template_name='faq/question_detail.html', ext
         slug_field = 'slug',
         queryset = Question.objects.active(user=request.user),
     )    
+
         
 def question_list( request, template_name='faq/question_list.html',
-					extra_context={}, group=False):
+					extra_context={}, slug=None, group=False):
     '''
     Displays a list of all the questions.
     '''
@@ -34,7 +36,12 @@ def question_list( request, template_name='faq/question_list.html',
     # Specifically note how we set the dict value and then allow the user
     # to pass along their own additional extra_context using 'update'.
 
-    query_set = Question.objects.active(group=group,user=request.user)
+    kwargs = {'group': group, 'user': request.user}
+    if slug:
+        topic = Topic.objects.get(slug=slug)
+        kwargs.update({'topic': topic})
+    print kwargs
+    query_set = Question.objects.active(**kwargs)
     
     if len(query_set) == 0:
 	raise Http404()
@@ -51,6 +58,7 @@ def question_list( request, template_name='faq/question_list.html',
         queryset = query_set
     )
 
+
 def faq_list( request, template_name='faq/faq_list.html', extra_context={} ):
     '''
     Display a typical FAQ view without group headers.
@@ -63,6 +71,7 @@ def faq_list( request, template_name='faq/faq_list.html', extra_context={} ):
 
     return question_list( request, template_name=template_name, extra_context=extra )
 
+
 def faq_list_by_group( request,
                        template_name='faq/faq_list_by_group.html',
                        extra_context={} ):
@@ -72,6 +81,19 @@ def faq_list_by_group( request,
     
     return question_list( request, group=True,
                           template_name=template_name, extra_context=extra)
+
+
+def topic_list_by_group( request,
+                        slug,
+                       template_name='faq/faq_list_by_group.html',
+                       extra_context={} ):
+
+    extra = { 'page_title': 'Grouped FAQs' }
+    extra.update( extra_context )
+    
+    return question_list( request, group=True,
+                          template_name=template_name, slug=slug, extra_context=extra)
+
 
 def submit_faq( request, form_class=SubmitFAQForm, 
              template_name="faq/submit_question.html",

@@ -3,22 +3,31 @@ from datetime import datetime
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import User
 from managers import QuestionManager
+from multilingual.exceptions import TranslationDoesNotExist
 import enums
+from multilingual.translation import TranslationModel
+
 
 class Topic(models.Model):
     """
     Generic Topics for FAQ question grouping
     """
 
-    name = models.CharField(max_length=150)
     slug = models.SlugField(max_length=150)
     sort_order = models.IntegerField(_('sort order'), default=0, help_text='The order you would like the topic to be displayed.')
 
+    class Translation(TranslationModel):
+        name = models.CharField(max_length=150)
+
     class Meta:
-        ordering = ['sort_order', 'name']
+        ordering = ['sort_order', 'slug']
 
     def __unicode__(self):
-        return self.name
+        try:
+            return self.get_translation(None).name
+        except TranslationDoesNotExist as e:
+            print e.__class__
+            return self._translation_cache.values()[0].name # just show the first one
 
 
 class FaqBase(models.Model):
@@ -34,6 +43,7 @@ class FaqBase(models.Model):
     class Meta:
         abstract = True
 
+
 class Question(FaqBase):
     """
     Represents a frequently asked question.
@@ -42,13 +52,15 @@ class Question(FaqBase):
 
     slug = models.SlugField( max_length=100, help_text="This is a unique identifier that allows your questions to display its detail view, ex 'how-can-i-contribute'", )
     topic = models.ForeignKey(Topic)
-    text = models.TextField(_('question'), help_text='The actual question itself.')
-    answer = models.TextField( _('answer'), help_text='The answer text.' )    
     status = models.IntegerField( choices=enums.QUESTION_STATUS_CHOICES, default=enums.STATUS_INACTIVE, help_text="Only questions with their status set to 'Active' will be displayed. Questions marked as 'Group Header' are treated as such by views and templates that are set up to use them." )
     sort_order = models.IntegerField(_('sort order'), default=0, help_text='The order you would like the question to be displayed.')
     protected = models.BooleanField( default="False", help_text="Set true if this question is only visible by authenticated users." )
-    
+
     objects = QuestionManager()
+
+    class Translation(TranslationModel):
+        text = models.TextField(_('question'), help_text='The actual question itself.')
+        answer = models.TextField( _('answer'), help_text='The answer text.' )    
     
     class Meta:
         ordering = ['sort_order', 'created_on', ]

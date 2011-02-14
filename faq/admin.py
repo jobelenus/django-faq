@@ -1,13 +1,15 @@
 from django.contrib import admin
+from multilingual.admin import MultilingualModelAdmin
 from models import Question, Topic
 from datetime import datetime
             
-class TopicAdmin(admin.ModelAdmin):
 
-    prepopulated_fields = {'slug':('name',)}
+class TopicAdmin(MultilingualModelAdmin):
+    pass
+    # prepopulated_fields = {'slug':('name',)} # django-admin chokes on this
 
     
-class QuestionAdmin(admin.ModelAdmin):
+class QuestionAdmin(MultilingualModelAdmin):
   
     list_display = ['text', 'sort_order', 'created_by', 'created_on', 'updated_by', 'updated_on', 'status']
 
