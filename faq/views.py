@@ -13,6 +13,9 @@ def question_detail(request, slug, template_name='faq/question_detail.html', ext
     Displays an individual question.
     
     """
+    # doesn't make sense that I need to do this
+    from multilingual.utils import GLL
+    GLL.lock(request.LANGUAGE_CODE)
 
     return object_detail(
         request,
@@ -35,6 +38,10 @@ def question_list( request, template_name='faq/question_list.html',
     # of extending an app using extra_content and such.
     # Specifically note how we set the dict value and then allow the user
     # to pass along their own additional extra_context using 'update'.
+
+    # doesn't make sense that I need to do this
+    from multilingual.utils import GLL
+    GLL.lock(request.LANGUAGE_CODE)
 
     kwargs = {'group': group, 'user': request.user}
     if slug:
