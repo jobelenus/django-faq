@@ -39,10 +39,6 @@ def question_list( request, template_name='faq/question_list.html',
     # Specifically note how we set the dict value and then allow the user
     # to pass along their own additional extra_context using 'update'.
 
-    # doesn't make sense that I need to do this
-    from multilingual.utils import GLL
-    GLL.lock(request.LANGUAGE_CODE)
-
     kwargs = {'group': group, 'user': request.user}
     if slug:
         topic = Topic.objects.get(slug=slug)
@@ -57,12 +53,17 @@ def question_list( request, template_name='faq/question_list.html',
  
     extra.update( extra_context )
     
-    return object_list(
+    from multilingual.utils import GLL
+    GLL.lock(request.LANGUAGE_CODE)
+
+    resp = object_list(
         request,
         template_name = template_name,
         extra_context = extra,
         queryset = query_set
     )
+    GLL.release()
+    return resp
 
 
 def faq_list( request, template_name='faq/faq_list.html', extra_context={} ):
